@@ -14,12 +14,14 @@ const Countdown = () => {
     const [timeRemaining, setTimeRemaining] = useState(0);
     const [isRunning, setIsRunning] = useState(false);
     const [isFinished, setIsFinished] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     const timerRef = useRef(null);
     const endTimeRef = useRef(0);
 
     // Sync state changes back to LocalStorage custom hook explicitly 
     const handleInputChange = (field, value) => {
+        setErrorMessage('');
         // Basic validation
         let num = parseInt(value, 10);
         if (isNaN(num)) num = '';
@@ -74,6 +76,13 @@ const Countdown = () => {
         if (isRunning) {
             setIsRunning(false); // Pause
         } else {
+            const h = parseInt(inputHours) || 0;
+            const m = parseInt(inputMinutes) || 0;
+            const s = parseInt(inputSeconds) || 0;
+            if (timeRemaining === 0 && h === 0 && m === 0 && s === 0 && !isFinished) {
+                setErrorMessage('Please enter a time');
+                return;
+            }
             startTimer();
         }
     };
@@ -86,6 +95,7 @@ const Countdown = () => {
         setInputMinutes('');
         setInputSeconds('');
         setSavedInputs({ h: '', m: '', s: '' });
+        setErrorMessage('');
     };
 
     const inputStyle = {
@@ -103,7 +113,7 @@ const Countdown = () => {
     };
 
     const isSetupDisabled = timeRemaining > 0 || isRunning || isFinished;
-    const isStartDisabled = !isRunning && timeRemaining === 0 && (!inputHours && !inputMinutes && !inputSeconds) && !isFinished;
+    const isStartDisabled = false; // Validation is handled on click
 
     return (
         <div className={(isRunning || isFinished) ? (isRunning ? 'running' : '') : ''} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -163,6 +173,12 @@ const Countdown = () => {
             {isFinished && (
                 <div style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--danger-color)', fontWeight: '600', fontSize: '1.25rem', animation: 'slideUpFade 0.3s ease-out' }}>
                     Time's Up!
+                </div>
+            )}
+
+            {errorMessage && (
+                <div style={{ textAlign: 'center', marginBottom: '1.5rem', color: '#ffaa00', fontSize: '0.95rem', animation: 'slideUpFade 0.2s ease-out' }}>
+                    {errorMessage}
                 </div>
             )}
 
